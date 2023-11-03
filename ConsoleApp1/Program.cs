@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿using System.Drawing;                     // you must install System.Drawing package from Nuget
 using System.Security.Cryptography;
 
 class Program
@@ -9,20 +9,23 @@ class Program
         string testDir = "TestShots";
         string outputDir = "DiffResults";
 
+        // create DiffResults Directory if it not exist
         if (!System.IO.Directory.Exists(outputDir))
         {
             System.IO.Directory.CreateDirectory(outputDir);
         }
 
+        // get all files from masterDir and save to masterFiles
         string[] masterFiles = System.IO.Directory.GetFiles(masterDir);
-        foreach (string masterFile in masterFiles)
+        // take each file in masterDir and see if that the same filename also exists in testDir, if so, compare
+        foreach (string masterFile in masterFiles)              
         {
             string fileName = System.IO.Path.GetFileName(masterFile);
             string testFile = System.IO.Path.Combine(testDir, fileName);
 
             if (System.IO.File.Exists(testFile))
             {
-
+                // calculate hash value from master and test file
                 string masterHash = CalculateImageHash(masterFile);
                 string testHash = CalculateImageHash(testFile);
 
@@ -32,6 +35,7 @@ class Program
                 }
                 else
                 {
+                    // transfer master and test file into bitmap format
                     Bitmap masterImage = new Bitmap(masterFile);
                     Bitmap testImage = new Bitmap(testFile);
                     SaveDifferenceImage(masterImage, testImage, System.IO.Path.Combine(outputDir, fileName));
@@ -56,20 +60,31 @@ class Program
 
     static void SaveDifferenceImage(Bitmap image1, Bitmap image2, string outputFilePath)
     {
+        // create new bitmap to save diffImage later
         Bitmap differenceImage = new Bitmap(image1.Width, image1.Height);
 
         for (int x = 0; x < image1.Width; x++)
         {
             for (int y = 0; y < image1.Height; y++)
             {
+                // get color value from pixel 
+                Color masterPixelColor = image1.GetPixel(x, y);
+
                 if (image1.GetPixel(x, y) != image2.GetPixel(x, y))
                 {
-                    Color masterPixel = image1.GetPixel(x, y);
-                    differenceImage.SetPixel(x, y, masterPixel);
+                    // when 2 pixel is different => color that pixel red and save it to differenceImage
+                    int red = masterPixelColor.R + 50;
+                    int green = masterPixelColor.G;
+                    int blue = masterPixelColor.B;
+                    red = Math.Min(255, red);
+                    Color diffPixelColor = Color.FromArgb(red, green, blue);
+
+                    differenceImage.SetPixel(x, y, diffPixelColor);
                 }
                 else
                 {
-                    differenceImage.SetPixel(x, y, Color.White);
+                    // when 2 pixel is same => just save origin pixel to differenceImage
+                    differenceImage.SetPixel(x, y, masterPixelColor);
                 }
             }
         }
