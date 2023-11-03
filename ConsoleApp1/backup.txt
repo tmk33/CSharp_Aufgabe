@@ -1,0 +1,79 @@
+using System;
+using System.Drawing;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        string masterDir = "MasterShots";
+        string testDir = "TestShots";
+        string outputDir = "DiffResults";
+
+        if (!System.IO.Directory.Exists(outputDir))
+        {
+            System.IO.Directory.CreateDirectory(outputDir);
+        }
+
+        string[] masterFiles = System.IO.Directory.GetFiles(masterDir);
+        foreach (string masterFile in masterFiles)
+        {
+            string fileName = System.IO.Path.GetFileName(masterFile);
+            string testFile = System.IO.Path.Combine(testDir, fileName);
+
+            if (System.IO.File.Exists(testFile))
+            {
+                Bitmap masterImage = new Bitmap(masterFile);
+                Bitmap testImage = new Bitmap(testFile);
+
+                if (ImagesAreDifferent(masterImage, testImage))
+                {
+                    SaveDifferenceImage(masterImage, testImage, System.IO.Path.Combine(outputDir, fileName));
+                }
+            }
+        }
+    }
+
+    static bool ImagesAreDifferent(Bitmap image1, Bitmap image2)
+    {
+        if (image1.Width != image2.Width || image1.Height != image2.Height)
+        {
+            return true;
+        }
+
+        for (int x = 0; x < image1.Width; x++)
+        {
+            for (int y = 0; y < image1.Height; y++)
+            {
+                if (image1.GetPixel(x, y) != image2.GetPixel(x, y))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    static void SaveDifferenceImage(Bitmap image1, Bitmap image2, string outputFilePath)
+    {
+        Bitmap differenceImage = new Bitmap(image1.Width, image1.Height);
+
+        for (int x = 0; x < image1.Width; x++)
+        {
+            for (int y = 0; y < image1.Height; y++)
+            {
+                if (image1.GetPixel(x, y) != image2.GetPixel(x, y))
+                {
+                    Color masterPixel = image1.GetPixel(x, y);
+                    differenceImage.SetPixel(x, y, masterPixel);
+                }
+                else
+                {
+                    differenceImage.SetPixel(x, y, Color.White);
+                }
+            }
+        }
+
+        differenceImage.Save(outputFilePath);
+    }
+}
