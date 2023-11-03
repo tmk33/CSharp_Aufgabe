@@ -38,7 +38,15 @@ class Program
                     // transfer master and test file into bitmap format
                     Bitmap masterImage = new Bitmap(masterFile);
                     Bitmap testImage = new Bitmap(testFile);
-                    SaveDifferenceImage(masterImage, testImage, System.IO.Path.Combine(outputDir, fileName));
+
+                    // create a directory with current date name in DiffResults Directory
+                    string todayDir = Path.Combine(outputDir, DateTime.Now.ToString("dd-MM-yyyy"));
+                    if (!System.IO.Directory.Exists(todayDir))
+                    {
+                        System.IO.Directory.CreateDirectory(todayDir);
+                    }
+
+                    SaveDifferenceImage(masterImage, testImage, System.IO.Path.Combine(todayDir, fileName));
                     Console.WriteLine($"Diff-Bild wird im {outputDir}-Ordner gespeichert!");
                 }
             }
@@ -77,6 +85,8 @@ class Program
                     int green = masterPixelColor.G;
                     int blue = masterPixelColor.B;
                     red = Math.Min(255, red);
+                    blue = Math.Min(255, blue);
+
                     Color diffPixelColor = Color.FromArgb(red, green, blue);
 
                     differenceImage.SetPixel(x, y, diffPixelColor);
